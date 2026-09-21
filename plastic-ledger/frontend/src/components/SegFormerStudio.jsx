@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Microscope, Play, Filter, Download, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Microscope, Play, Filter, Download, ShieldCheck, CheckCircle2, Globe, MapPin } from "lucide-react";
 import { runSegFormerInference, appendLedgerBlock } from "../services/api";
 
 const POLYMER_COLORS = {
@@ -11,12 +11,24 @@ const POLYMER_COLORS = {
   PVC: "#ffd166"
 };
 
-export default function SegFormerStudio({ onLedgerUpdated }) {
+// Realistic ocean sampling locations for geocoding ML detections onto the global map
+const OCEAN_SAMPLE_LOCATIONS = [
+  { lat: 35.48,  lon: -148.22, zone: "Great Pacific Garbage Patch" },
+  { lat: 32.15,  lon: -42.88,  zone: "North Atlantic Gyre" },
+  { lat: -29.72, lon: 82.45,   zone: "Indian Ocean Gyre" },
+  { lat: 13.01,  lon: 80.28,   zone: "Bay of Bengal / Chennai Coast" },
+  { lat: 21.25,  lon: 89.05,   zone: "Ganges Delta Plume" },
+  { lat: 4.25,   lon: 6.55,    zone: "Niger Delta" },
+  { lat: 30.95,  lon: 122.15,  zone: "Yangtze Estuary" },
+];
+
+export default function SegFormerStudio({ onLedgerUpdated, onDetectionGeolocated }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [selectedPolymer, setSelectedPolymer] = useState("ALL");
   const [selectedParticle, setSelectedParticle] = useState(null);
-  const [ledgerLogged, setLedgerLogged] = useState(false);
+  const [ledgerLogged,  setLedgerLogged]  = useState(false);
+  const [geocoded,      setGeocoded]      = useState(false);
 
   const executeInference = async (polyFilter = selectedPolymer) => {
     setLoading(true);
@@ -293,6 +305,38 @@ export default function SegFormerStudio({ onLedgerUpdated }) {
                   <ShieldCheck size={16} /> Commit Inspection to Cryptographic Ledger
                 </>
               )}
+            </button>
+
+            {/* Place on Global Ocean Map */}
+            <button
+              onClick={() => {
+                if (!selectedParticle || geocoded) return;
+                const loc = OCEAN_SAMPLE_LOCATIONS[Math.floor(Math.random() * OCEAN_SAMPLE_LOCATIONS.length)];
+                const detection = {
+                  lat:          loc.lat,
+                  lon:          loc.lon,
+                  zone:         loc.zone,
+                  polymer:      selectedParticle.polymer,
+                  confidence:   selectedParticle.confidence,
+                  feret_max_um: selectedParticle.feret_max_um,
+                  particle_id:  selectedParticle.particle_id,
+                };
+                if (onDetectionGeolocated) onDetectionGeolocated(detection);
+                setGeocoded(true);
+              }}
+              disabled={geocoded}
+              className="btn-outline"
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                marginTop: "4px",
+                borderColor: geocoded ? "var(--accent-cyan)" : "var(--border-subtle)",
+                color:       geocoded ? "var(--accent-cyan)" : "var(--text-secondary)",
+              }}
+            >
+              {geocoded
+                ? <><MapPin size={15} /> Pinned on Global Ocean Map</>
+                : <><Globe size={15} /> Place Detection on Global Map</>}
             </button>
           </div>
         ) : (

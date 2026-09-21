@@ -177,3 +177,51 @@ body {
   box-shadow: 0 0 10px var(--accent-emerald);
   animation: pulseGlow 2s infinite ease-in-out;
 }
+
+/* Spinner for backtrack loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Pulsing origin marker for PINN backtrack endpoint */
+@keyframes originPulse {
+  0%   { box-shadow: 0 0 0 0   rgba(247,37,133,0.9), 0 0 10px rgba(247,37,133,0.6); }
+  70%  { box-shadow: 0 0 0 14px rgba(247,37,133,0), 0 0 18px rgba(247,37,133,0.3); }
+  100% { box-shadow: 0 0 0 0   rgba(247,37,133,0), 0 0 10px rgba(247,37,133,0.6); }
+}
+.origin-pulse {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f72585;
+  border: 3px solid #fff;
+  animation: originPulse 1.4s ease-out infinite;
+}
+
+/* Gyre zone breathing animation */
+@keyframes gyrePulse {
+  0%, 100% { opacity: 0.10; }
+  50%       { opacity: 0.18; }
+}
+
+/* Glass Leaflet tooltip */
+.glass-tooltip {
+  background: rgba(7, 13, 30, 0.92) !important;
+  border: 1px solid rgba(0, 242, 254, 0.25) !important;
+  color: #f8fafc !important;
+  border-radius: 6px !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.78rem !important;
+  backdrop-filter: blur(12px) !important;
+  padding: 8px 12px !important;
+}
+.glass-tooltip::before {
+  border-top-color: rgba(0, 242, 254, 0.25) !important;
+}
+
+/* Current vector arrows */
+.current-vector-icon {
+  background: transparent;
+  border: none;
+}

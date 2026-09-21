@@ -51,13 +51,36 @@ export async function runReverseAttribution(detectedCoords = [13.08, 80.32], pol
   return res.json();
 }
 
-export async function fetchSources() {
-  const res = await fetch(`${API_BASE}/sources`);
+/**
+ * POST /api/physics/backtrack
+ * Full backward drift path + ranked origin sources for Leaflet animation
+ */
+export async function runBacktrack(lat, lon, polymer = "PE", hours = 72) {
+  const res = await fetch(`${API_BASE}/physics/backtrack`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat, lon, polymer, hours })
+  });
+  return res.json();
+}
+
+export async function fetchSources(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${API_BASE}/sources${query ? "?" + query : ""}`);
   return res.json();
 }
 
 export async function fetchMapLayers() {
   const res = await fetch(`${API_BASE}/map/layers`);
+  return res.json();
+}
+
+/**
+ * GET /api/map/global-stats
+ * Live global plastic accumulation stats
+ */
+export async function fetchGlobalStats() {
+  const res = await fetch(`${API_BASE}/map/global-stats`);
   return res.json();
 }
 
