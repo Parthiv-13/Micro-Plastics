@@ -1,4 +1,4 @@
-path: D:/Micro-Plastics/datasets/nile-red-microplastics
+path: D:/Micro-Plastics/data/nile-red-microplastics
 train: images/train
 val: images/val
 test: images/test

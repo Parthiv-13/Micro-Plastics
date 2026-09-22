@@ -1,7 +1,17 @@
-# Deep Learning & Object Detection
+# ═══════════════════════════════════════════════════════════════════
+# Micro-Plastics ML/AI — Unified Requirements
+# ═══════════════════════════════════════════════════════════════════
+
+# Deep Learning & Object Detection (YOLOv8)
 ultralytics>=8.0.0
 torch>=2.0.0
 torchvision>=0.15.0
+
+# Transformer Vision Models (SegFormer / Mask2Former)
+transformers>=4.30.0
+
+# Physics-Informed Neural Networks
+deepxde>=1.9.0
 
 # Computer Vision & Image Processing
 opencv-python>=4.7.0
@@ -26,7 +36,13 @@ ipywidgets>=8.0.0
 # Configuration & Utilities
 pyyaml>=6.0
 tqdm>=4.65.0
+requests>=2.31.0
+pydantic>=2.0.0
 
-# Optional Model Export (Edge Deployment)
+# Optional: Python API Server
+fastapi>=0.100.0
+uvicorn>=0.22.0
+
+# Optional: Model Export (Edge Deployment)
 onnx>=1.14.0
 onnxruntime>=1.15.0

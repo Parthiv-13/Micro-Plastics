@@ -32,17 +32,28 @@ ENV/
 env.bak/
 venv.bak/
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
 # Jupyter Notebook Checkpoints & Cache
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
-# Deep Learning Weights & Checkpoints (YOLO / PyTorch)
+# Deep Learning Weights & Checkpoints (YOLO / PyTorch / SegFormer)
 *.pt
 *.pth
 *.pwf
 yolov8*.pt
 yolo*.pt
 *.weights
+ml/models/*.pth
+ml/models/*.onnx
+ml/models/*.pt
+ml/models/*.engine
 
 # Model Export Formats for Edge Hardware
 *.onnx
@@ -72,23 +83,42 @@ ml/wandb/
 
 # Raw & Generated Microscopy Image Files
 # Keep data.yaml, README.md, and dataset scripts tracked
-datasets/nile-red-microplastics/images/
-datasets/nile-red-microplastics/labels/
-datasets/nile-red-microplastics/dataset_microplastic/
-datasets/nile-red-microplastics/*.zip
+data/nile-red-microplastics/images/
+data/nile-red-microplastics/labels/
+data/nile-red-microplastics/dataset_microplastic/
+data/nile-red-microplastics/*.zip
 
 # Satellite Imagery Datasets
-datasets/nasa-marine-debris/data/
-datasets/nasa-marine-debris/images/
-datasets/nasa-marine-debris/labels/
-datasets/nasa-marine-debris/*.zip
-datasets/nasa-marine-debris/*.tar.gz
+data/nasa-marine-debris/data/
+data/nasa-marine-debris/images/
+data/nasa-marine-debris/labels/
+data/nasa-marine-debris/*.zip
+data/nasa-marine-debris/*.tar.gz
+
+# Large satellite raw tiles & processed outputs
+data/processed/*.tif
+data/processed/*.nc
 
 # Output Inference Visualizations & Reports
 output/
 ml/output/
 inference_results/
 ml/inference_results/
+
+# Frontend Build Artifacts
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+frontend/.env
+!frontend/.env.example
+
+# Vite
+*.local
 
 # Operating System Files
 .DS_Store
@@ -107,3 +137,4 @@ desktop.ini
 *.swo
 *~
 .agents/
+.whodare/

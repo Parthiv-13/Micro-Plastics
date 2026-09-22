@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-SegFormer Sub-Pixel Segmentation & Physical Particle Quantification Engine
-==========================================================================
-Provides high-resolution boundary delineation, sub-pixel polygon extraction,
-and micrometer physical quantification for Nile Red fluorescence microplastics.
+Vision: Sub-Pixel Segmentation & Physical Particle Quantification
+=================================================================
+
+Unified module combining:
+  • SegFormer (MiT-B0 to MiT-B5) sub-pixel semantic segmentation with polygon
+    extraction, Feret diameter calipers, circularity, and Stokes settling velocity.
+  • Mask2Former architecture configuration for instance-level microplastic
+    boundary delineation.
 
 Supported Polymer Classes:
   0: ABS   (Acrylonitrile Butadiene Styrene)
@@ -12,6 +16,9 @@ Supported Polymer Classes:
   3: PET   (Polyethylene Terephthalate)
   4: PS    (Polystyrene)
   5: PVC   (Polyvinyl Chloride)
+
+Author: Micro-Plastics Research Team
+License: MIT
 """
 
 import os
@@ -22,7 +29,11 @@ import argparse
 from pathlib import Path
 import numpy as np
 
-# Polymer reference dictionary & physical properties
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Polymer Reference Data & Physical Properties
+# ═══════════════════════════════════════════════════════════════════════════════
+
 POLYMERS = {
     0: {"name": "ABS", "density_g_cm3": 1.05, "fluorescence_peak_nm": 580, "morphology": "irregular fragment"},
     1: {"name": "Nylon", "density_g_cm3": 1.14, "fluorescence_peak_nm": 565, "morphology": "fiber / filament"},
@@ -31,6 +42,35 @@ POLYMERS = {
     4: {"name": "PS", "density_g_cm3": 1.04, "fluorescence_peak_nm": 610, "morphology": "expanded bead / sphere"},
     5: {"name": "PVC", "density_g_cm3": 1.40, "fluorescence_peak_nm": 570, "morphology": "dense shard"},
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mask2Former Architecture Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+MASK2FORMER_CONFIG = {
+    "model_type": "mask2former",
+    "backbone": "Swin-Transformer-Base",
+    "pixel_decoder": "MSDeformAttnPixelDecoder",
+    "transformer_decoder": "MultiScaleMaskedAttentionDecoder",
+    "num_queries": 100,
+    "num_classes": 6,
+    "classes": ["ABS", "Nylon", "PE", "PET", "PS", "PVC"],
+    "subpixel_refinement": {
+        "loss_weight": 2.0,
+        "mask_threshold": 0.5,
+        "edge_regularization": "SobelLaplacianLoss"
+    },
+    "calibration": {
+        "magnification": "10x",
+        "scale_pixels_per_micron": 0.65
+    }
+}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SegFormer Sub-Pixel Engine
+# ═══════════════════════════════════════════════════════════════════════════════
 
 class SegFormerSubPixelEngine:
     """
@@ -172,12 +212,22 @@ class SegFormerSubPixelEngine:
             "detections": detections,
         }
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI Entrypoint
+# ═══════════════════════════════════════════════════════════════════════════════
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="SegFormer Sub-Pixel Segmentation Engine")
+    parser = argparse.ArgumentParser(description="SegFormer Sub-Pixel Segmentation & Mask2Former Vision Engine")
     parser.add_argument("--test", action="store_true", help="Run test inference")
     parser.add_argument("--frame", type=str, default="nile_red_sample_01", help="Sample frame ID")
     parser.add_argument("--scale", type=float, default=0.65, help="Pixels per micron")
+    parser.add_argument("--show-config", action="store_true", help="Print Mask2Former architecture config")
     args = parser.parse_args()
+
+    if args.show_config:
+        print(json.dumps(MASK2FORMER_CONFIG, indent=2))
+        sys.exit(0)
 
     engine = SegFormerSubPixelEngine(scale_px_per_um=args.scale)
     results = engine.infer_synthetic_frame(frame_id=args.frame)

@@ -6,7 +6,12 @@ import os
 import glob
 from pathlib import Path
 
-def get_polymer_stats(dataset_root: str = "d:/Micro-Plastics/Alldataset_annotation") -> dict:
+def get_polymer_stats(dataset_root: str = None) -> dict:
+    if dataset_root is None:
+        # Auto-detect from repo root
+        cwd = Path(__file__).resolve().parent.parent
+        dataset_root = str(cwd / "data" / "nile-red-microplastics" / "annotations")
+
     root = Path(dataset_root)
     classes = ["ABS", "Nylon", "PE", "PET", "PS", "PVC"]
     stats = {}

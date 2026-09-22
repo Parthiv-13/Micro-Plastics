@@ -1,188 +1,96 @@
-# Machine Learning Pipeline: Microplastic Detection & Polymer Classification
+# Machine Learning & AI Pipeline
 
-This directory contains the machine learning pipelines, deep learning models, and Jupyter notebooks for training, evaluating, and deploying object detection models for microplastic identification.
-
----
-
-## Architecture Overview
-
-The detection system leverages **YOLOv8** (You Only Look Once, v8) by Ultralytics, an anchor-free single-stage object detector designed for high speed and precision, making it suitable for low-power portable edge devices.
-
-```
-       [ Fluorescence Microscopy Frame (Nile Red Stained) ]
-                               │
-                               ▼
-        ┌──────────────────────────────────────────────┐
-        │        Backbone (Modified CSPDarknet)        │  <- Multi-scale feature extraction
-        └──────────────────────────────────────────────┘
-                               │
-                               ▼
-        ┌──────────────────────────────────────────────┐
-        │            Neck (PANet / FPN)                │  <- Feature pyramid aggregation
-        └──────────────────────────────────────────────┘
-                               │
-                               ▼
-        ┌──────────────────────────────────────────────┐
-        │             Decoupled Head                   │
-        │   ┌───────────────────┬──────────────────┐   │
-        │   │ Bounding Box Reg  │ Polymer Class    │   │  <- Anchor-free regression & DFL
-        │   │ (CIoU + DFL Loss) │ (BCE Loss)       │   │
-        │   └───────────────────┴──────────────────┘   │
-        └──────────────────────────────────────────────┘
-                               │
-                               ▼
-    [ Class ID (0-5) | Confidence | BBox Coordinates (x,y,w,h) ]
-                               │
-                               ▼
-        ┌──────────────────────────────────────────────┐
-        │        Particle Quantification Engine        │
-        │  • Pixel-to-Micrometer Scale Calibration     │
-        │  • Feret Diameter & Aspect Ratio Estimation  │
-        │  • Size Distribution & Polymer Abundance     │
-        └──────────────────────────────────────────────┘
-```
+All machine learning, deep learning, physics-informed modeling, and satellite remote sensing code lives here in **consolidated single-file modules**.
 
 ---
 
-## Key Components
+## File Index
 
-### 1. [Jupyter Notebook: `yolov8_microplastic_detection.ipynb`](file:///d:/Micro-Plastics/ml/yolov8_microplastic_detection.ipynb)
+| File | Description |
+|:---|:---|
+| `yolo_pipeline.py` | YOLOv8 object detection: dataset prep, training, inference, and edge export |
+| `vision.py` | SegFormer sub-pixel segmentation + Mask2Former instance segmentation config |
+| `physics.py` | DeepXDE PINN advection-diffusion-settling solver + ocean current vectors |
+| `satellite.py` | Sentinel-2 FDI engine + Landsat-9 OLI-2 marine debris pipeline |
+| `data_loader.py` | Annotation dataset bridge for SegFormer/Mask2Former training |
+| `models/metadata.json` | Model registry, calibration scales, and architecture configs |
+| `yolov8_microplastic_detection.ipynb` | Interactive Jupyter notebook (EDA, training, evaluation) |
 
-A modular, end-to-end interactive notebook containing:
+---
 
-1. **Environment Setup & Verification**: Verifying PyTorch, GPU acceleration (CUDA), and Ultralytics installations.
-2. **Exploratory Data Analysis (EDA)**:
-   - Parsing the 2,566 consolidated YOLO annotation files.
-   - Analyzing class balance across the 6 polymers (ABS, Nylon, PE, PET, PS, PVC).
-   - Computing bounding box area distributions, aspect ratios, and particle densities per field of view.
-3. **Dataset Preparation & Train/Val/Test Split**:
-   - Automated creation of standard YOLO folder structure:
-     ```
-     datasets/nile-red-microplastics/
-     ├── images/ {train, val, test}
-     └── labels/ {train, val, test}
-     ```
-   - Stratified random splitting (e.g., 70% train, 20% val, 10% test).
-   - Optional synthetic fluorescence frame generator for testing pipelines in the absence of raw TIFF/JPG images.
-4. **YOLOv8 Model Configuration & Training**:
-   - Initializing pretrained weights (`yolov8n.pt` for resource-constrained edge hardware, or `yolov8s.pt` for higher accuracy).
-   - Specialized fluorescence hyperparameter tuning:
-     - Mild color jittering (`hsv_h=0.015, hsv_s=0.5, hsv_v=0.4`) preserving Nile Red solvatochromic shift.
-     - Spatial augmentations (`degrees=180.0, fliplr=0.5, flipud=0.5`) reflecting rotational invariance in microscope fields.
-5. **Model Evaluation & Diagnostics**:
-   - Loss curves (Box Loss, Class Loss, DFL Loss).
-   - Mean Average Precision metrics: $\text{mAP}@0.5$ and $\text{mAP}@[0.5:0.95]$.
-   - Confusion matrix and per-class Precision / Recall analysis.
-6. **Inference & Visualization**:
-   - Overlaying detected bounding boxes, class labels, and detection confidence scores.
-   - Batch inference pipeline for continuous sample scanning.
-7. **Quantitative Microplastic Sizing & Analysis**:
-   - Converting normalized bounding box dimensions to physical units ($\mu\text{m}$) using magnification calibration factors:
-     $$\text{Length}\,(\mu\text{m}) = \frac{\text{Width}_{\text{pixels}}}{\text{Scale Factor}\,(\text{pixels}/\mu\text{m})}$$
-   - Generating particle size distribution histograms and polymer composition breakdown.
-8. **Edge Hardware Deployment**:
-   - Exporting the trained weights to **ONNX**, **OpenVINO**, and **TensorRT** for deployment on Raspberry Pi 4/5, NVIDIA Jetson Orin Nano, or Android/microcontroller edge systems.
+## YOLOv8 Pipeline (`yolo_pipeline.py`)
 
-### 2. Modular CLI Automation Scripts
+Single CLI with 4 subcommands:
 
-For headless servers, automated batch pipelines, and edge devices, dedicated Python scripts provide direct command-line workflows:
-
-#### **A. Dataset Preparation (`prepare_dataset.py`)**
-Validates the 2,566 YOLO annotations in `Alldataset_annotation/` and produces stratified Train/Val/Test splits:
 ```bash
-# Dry run verification
-python prepare_dataset.py --dry-run
+# Validate annotations & preview split statistics
+python yolo_pipeline.py prepare --dry-run
 
-# Partition dataset and synthesize test fluorescence frames
-python prepare_dataset.py --generate-synthetic
+# Partition dataset with synthetic frame generation
+python yolo_pipeline.py prepare --generate-synthetic
+
+# Train with fluorescence-optimized augmentations
+python yolo_pipeline.py train --weights yolov8n.pt --epochs 50 --batch 16 --device 0
+
+# Inference with calibrated particle sizing
+python yolo_pipeline.py infer --weights best.pt --source ../data/nile-red-microplastics/images/test/ --scale 0.65
+
+# Export to edge formats
+python yolo_pipeline.py export --weights best.pt --format onnx
+python yolo_pipeline.py export --weights best.pt --format openvino
+python yolo_pipeline.py export --weights best.pt --format engine --half
 ```
 
-#### **B. Model Training (`train.py`)**
-Trains YOLOv8 with fluorescence domain-specific augmentations (180° rotation invariance, restricted hue jitter):
+---
+
+## Vision Engine (`vision.py`)
+
+SegFormer sub-pixel semantic segmentation with polygon extraction, Feret caliper measurement, circularity, and Stokes settling velocity:
+
 ```bash
-python train.py --weights yolov8n.pt --epochs 50 --batch 16 --device 0
+python vision.py --test --scale 0.65
+python vision.py --show-config   # Print Mask2Former architecture config
 ```
 
-#### **C. Inference & Particle Quantification (`infer.py`)**
-Detects microplastics, applies magnification calibration, and outputs physical particle statistics:
+---
+
+## Physics-AI Engine (`physics.py`)
+
+DeepXDE PINN solving the advection-diffusion-settling PDE + ocean current vectors:
+
 ```bash
-python infer.py --weights best.pt --source ../test_images/ --scale 0.65 --output-dir inference_results/
+python physics.py --test --polymer PE
+python physics.py --currents --lat 13.08 --lon 80.32
 ```
 
-#### **D. Edge Hardware Export (`export.py`)**
-Exports PyTorch weights for low-power edge accelerators (Raspberry Pi, Jetson Orin Nano, Intel NUC):
-```bash
-# Export to ONNX
-python export.py --weights best.pt --format onnx --simplify
+---
 
-# Export to OpenVINO / TensorRT
-python export.py --weights best.pt --format openvino
-python export.py --weights best.pt --format engine --half
+## Satellite Engine (`satellite.py`)
+
+Sentinel-2 MSI and Landsat-9 OLI-2 floating debris detection:
+
+```bash
+python satellite.py --sensor sentinel2 --test
+python satellite.py --sensor landsat9 --test
 ```
 
 ---
 
 ## 6 Target Polymer Classes
 
-| ID | Class | Full Chemical Name | Expected Nile Red Fluorescence |
+| ID | Class | Full Chemical Name | Nile Red Fluorescence |
 |:---:|:---:|:---|:---|
-| `0` | **ABS** | Acrylonitrile Butadiene Styrene | Yellowish-orange emission |
-| `1` | **Nylon** | Polyamide (PA) | Intense green-to-yellow emission |
-| `2` | **PE** | Polyethylene (LDPE / HDPE) | Golden-yellow fluorescence |
-| `3` | **PET** | Polyethylene Terephthalate | Orange-red fluorescence |
-| `4` | **PS** | Polystyrene | High-intensity golden-yellow emission |
-| `5` | **PVC** | Polyvinyl Chloride | Reddish-orange emission |
+| `0` | **ABS** | Acrylonitrile Butadiene Styrene | Yellowish-orange |
+| `1` | **Nylon** | Polyamide (PA) | Green-to-yellow |
+| `2` | **PE** | Polyethylene (LDPE / HDPE) | Golden-yellow |
+| `3` | **PET** | Polyethylene Terephthalate | Orange-red |
+| `4` | **PS** | Polystyrene | High-intensity golden-yellow |
+| `5` | **PVC** | Polyvinyl Chloride | Reddish-orange |
 
 ---
 
-## Installation & Environment
+## Installation
 
 ```bash
-# Create and activate a Python virtual environment (optional)
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
-# Install required packages
 pip install -r requirements.txt
-```
-
-### Running the Notebook
-
-```bash
-jupyter notebook yolov8_microplastic_detection.ipynb
-```
-Or launch JupyterLab / open directly in VS Code / Antigravity IDE.
-
----
-
-## Performance Targets (From Rermborirak et al., 2025)
-
-In the associated publication, the YOLOv8 model demonstrated:
-- High detection accuracy ($\text{mAP}@0.5 > 90\%$) across stained microplastic particles.
-- Real-time inference capability (> 30 FPS on edge accelerators, < 150 ms on portable embedded CPUs).
-- Successful classification even with overlapping particles and diverse particle morphologies (fibers, fragments, films, and spheres).
-
----
-
-## Model Export Commands
-
-You can also run export directly via the Ultralytics CLI or Python API:
-
-```python
-from ultralytics import YOLO
-
-# Load trained model
-model = YOLO('runs/detect/microplastic_yolov8/weights/best.pt')
-
-# Export to ONNX (for cross-platform deployment)
-model.export(format='onnx', dynamic=True, simplify=True)
-
-# Export to OpenVINO (optimized for Intel CPUs / Raspberry Pi)
-model.export(format='openvino')
-
-# Export to TensorRT (optimized for NVIDIA Jetson)
-model.export(format='engine', half=True)
 ```
