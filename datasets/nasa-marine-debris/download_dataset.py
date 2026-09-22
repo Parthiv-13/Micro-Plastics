@@ -78,10 +78,12 @@ How to Download:
 def download_with_api_key(api_key: str, output_dir: Path):
     """Downloads dataset using radiant_mlhub client library."""
     try:
-        from radiant_mlhub import Dataset  # type: ignore
+        # pyrefly: ignore [missing-import]
+        from radiant_mlhub import Dataset
     except ImportError:
         print("[!] The `radiant-mlhub` library is required to download via API key.")
         print("    Install it via: pip install radiant-mlhub")
+        # pyrefly: ignore [parse-error]
         sys.exit(1)
 
     os.environ["MLHUB_API_KEY"] = api_key
