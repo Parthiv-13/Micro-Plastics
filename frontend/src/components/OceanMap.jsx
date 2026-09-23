@@ -5,6 +5,8 @@ import {
   X, AlertTriangle, Navigation, RotateCcw, Target, Map as MapIcon
 } from "lucide-react";
 import GlobalStatsPanel from "./GlobalStatsPanel";
+import { fetchMapLayers, fetchGlobalStats, runBacktrack as apiRunBacktrack } from "../services/api";
+import { motion } from "framer-motion";
 
 // ============================================================
 // Basemap configurations
@@ -71,15 +73,8 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
 
   // ── Fetch global data ──────────────────────────────────────
   useEffect(() => {
-    fetch("http://localhost:5000/api/map/layers")
-      .then(r => r.json())
-      .then(d => { if (d.success) setMapData(d.layers); })
-      .catch(e => console.error("Map layers error:", e));
-
-    fetch("http://localhost:5000/api/map/global-stats")
-      .then(r => r.json())
-      .then(d => { if (d.success) setGlobalStats(d.stats); })
-      .catch(e => console.error("Global stats error:", e));
+    fetchMapLayers().then(d => { if (d && d.success !== false) setMapData(d.layers); });
+    fetchGlobalStats().then(d => { if (d && d.success !== false) setGlobalStats(d.stats); });
   }, []);
 
   // ── Initialize Leaflet map ─────────────────────────────────
@@ -268,14 +263,9 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
     layersRef.current.backtrackOriginMarker = null;
 
     try {
-      const res  = await fetch("http://localhost:5000/api/physics/backtrack", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lat: hotspot.lat, lon: hotspot.lon, polymer: hotspot.polymer, hours: 720 }),
-      });
-      const data = await res.json();
-
-      if (!data.success) { setIsBacktracking(false); return; }
+      const data = await apiRunBacktrack(hotspot.lat, hotspot.lon, hotspot.polymer, 720);
+      
+      if (!data || !data.success) { setIsBacktracking(false); return; }
 
       setBacktrackResult(data.data);
       const waypoints = data.data.waypoints || [];
@@ -457,7 +447,13 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
       </div>
 
       {/* ── Right Sidebar ────────────────────────────────────── */}
-      <div className="glass-panel" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}>
+      <motion.div 
+        className="glass-panel" 
+        style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+      >
 
         {/* Header */}
         <div>
@@ -579,7 +575,7 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

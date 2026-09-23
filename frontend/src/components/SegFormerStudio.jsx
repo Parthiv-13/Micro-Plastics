@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Microscope, Play, Filter, Download, ShieldCheck, CheckCircle2, Globe, MapPin } from "lucide-react";
 import { runSegFormerInference, appendLedgerBlock } from "../services/api";
+import { motion } from "framer-motion";
 
 const POLYMER_COLORS = {
   ABS: "#f72585",
@@ -210,7 +211,13 @@ export default function SegFormerStudio({ onLedgerUpdated, onDetectionGeolocated
       </div>
 
       {/* Particle Physical Quantification Inspector */}
-      <div className="glass-panel" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}>
+      <motion.div 
+        className="glass-panel" 
+        style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+      >
         <div>
           <div className="badge-glow badge-emerald" style={{ marginBottom: "6px" }}>
             Particle Caliper
@@ -344,7 +351,7 @@ export default function SegFormerStudio({ onLedgerUpdated, onDetectionGeolocated
             Select a particle contour from the microscope canvas to inspect.
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

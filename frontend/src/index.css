@@ -72,6 +72,12 @@ body {
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-panel:hover {
+  border-color: rgba(0, 242, 254, 0.25);
+  box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 242, 254, 0.05);
 }
 
 .glass-panel-glow {
@@ -80,6 +86,12 @@ body {
   border: 1px solid rgba(0, 242, 254, 0.3);
   box-shadow: var(--shadow-glow);
   border-radius: var(--radius-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel-glow:hover {
+  box-shadow: 0 0 35px rgba(0, 242, 254, 0.3);
+  transform: translateY(-2px);
 }
 
 .badge-glow {
