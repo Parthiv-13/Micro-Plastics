@@ -21,9 +21,10 @@ export default function App() {
     fetchHealth()
       .then(data => {
         setHealthData(data);
+        toast.dismiss("backend-health");
       })
       .catch(err => {
-        toast.error("Backend server is unreachable! Please start the API.", { duration: 6000 });
+        toast.error("Backend server is unreachable! Please start the API.", { id: "backend-health", duration: 6000 });
         console.warn("Backend not yet connected:", err);
       });
   }, []);

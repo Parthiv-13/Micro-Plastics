@@ -13,18 +13,14 @@ import { motion } from "framer-motion";
 // ============================================================
 const BASEMAP_CONFIGS = {
   dark: {
-    name: "CARTO Dark Matter",
-    getUrl: (key) => key
-      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${key}`
-      : `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png`,
-    options: { attribution: '&copy; CARTO &copy; OpenStreetMap', subdomains: "abcd", maxZoom: 19 }
+    name: "Esri Dark Gray",
+    getUrl: () => "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    options: { attribution: '&copy; Esri, HERE, Garmin, © OpenStreetMap', maxZoom: 16 }
   },
-  voyager: {
-    name: "CARTO Voyager",
-    getUrl: (key) => key
-      ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=${key}`
-      : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png`,
-    options: { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>', subdomains: "abcd", maxZoom: 20 }
+  ocean: {
+    name: "Esri Ocean",
+    getUrl: () => "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
+    options: { attribution: '&copy; Esri, GEBCO, NOAA, National Geographic', maxZoom: 13 }
   },
   satellite: {
     name: "Esri Satellite",
@@ -364,8 +360,8 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
             <MapIcon size={13} style={{ color: "var(--accent-cyan)" }} />
             <select value={activeBasemap} onChange={e => setActiveBasemap(e.target.value)}
               style={{ background: "rgba(16,30,64,0.95)", color: "#e2e8f0", border: "1px solid var(--border-glass)", borderRadius: "4px", padding: "4px 8px", fontSize: "0.72rem", cursor: "pointer", outline: "none" }}>
-              <option value="dark">CARTO Dark</option>
-              <option value="voyager">CARTO Voyager</option>
+              <option value="dark">Esri Dark</option>
+              <option value="ocean">Esri Ocean</option>
               <option value="satellite">Esri Satellite</option>
               <option value="osm">OpenStreetMap</option>
             </select>
@@ -387,11 +383,9 @@ export default function OceanMap({ onSelectHotspot, onTriggerPINN, userDetection
           </button>
 
           <div style={{ width: "1px", height: "16px", background: "var(--border-subtle)" }} />
-          <button onClick={() => setShowKeyInput(v => !v)} className="btn-outline"
-            title="Configure CARTO API Key"
-            style={{ padding: "4px 9px", fontSize: "0.7rem", borderColor: cartoKey ? "var(--accent-emerald)" : "var(--border-subtle)", color: cartoKey ? "var(--accent-emerald)" : "var(--text-secondary)" }}>
-            <Key size={12} /> {cartoKey ? "Key ✓" : "CARTO Key"}
-          </button>
+          <span style={{ fontSize: "0.7rem", color: "var(--accent-cyan)", background: "rgba(0, 242, 254, 0.1)", border: "1px solid rgba(0, 242, 254, 0.25)", padding: "3px 8px", borderRadius: "4px" }}>
+            💡 Tip: Click any hotspot circle on the map to run PINN Backtracking
+          </span>
         </div>
 
         {/* CARTO Key Input Dropdown */}

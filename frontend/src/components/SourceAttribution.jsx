@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Activity, ArrowUpRight, Compass, ShieldAlert, CheckCircle2, Play, Globe, Filter, TrendingDown } from "lucide-react";
+import { Activity, ArrowUpRight, Compass, ShieldAlert, CheckCircle2, Play, Globe, Filter, Info, HelpCircle } from "lucide-react";
 import { runReverseAttribution, fetchSources, appendLedgerBlock } from "../services/api";
 
 const OCEAN_BASINS = ["All", "Pacific", "Atlantic", "Indian", "Mediterranean", "Black Sea", "Red Sea", "North Sea"];
@@ -76,23 +76,38 @@ export default function SourceAttribution({ onLedgerUpdated }) {
   };
 
   const riskColor = r => ({ CRITICAL: "#f72585", HIGH: "#ffb703", MEDIUM: "#4cc9f0", LOW: "#06d6a0" }[r] || "#fff");
-
   const maxTons = Math.max(...filteredSources.map(s => s.annual_discharge_tons), 1);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "20px", height: "calc(100vh - 120px)" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "20px", height: "calc(100vh - 110px)" }}>
 
-      {/* ── Left: Global Source Table ─────────────────────────── */}
+      {/* ── Left: Global Source Registry ─────────────────────────── */}
       <div className="glass-panel" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}>
         {/* Header */}
         <div style={{ borderBottom: "1px solid var(--border-subtle)", paddingBottom: "14px" }}>
           <div className="badge-glow badge-rose" style={{ marginBottom: "6px" }}>
-            <Activity size={12} /> Inverse Adjoint Hydrodynamics
+            <Activity size={12} /> Step 5 • Ocean Forensic Intelligence
           </div>
-          <h2 style={{ fontSize: "1.15rem", fontWeight: 700 }}>Global Pollution Emitter Registry</h2>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-            {sources.length} verified land-based & maritime emission sources worldwide. Combined annual discharge: <strong style={{ color: "var(--accent-amber)" }}>{(totalTons / 1000).toFixed(1)}k tons/yr</strong>.
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 700 }}>Global Pollution Emitter Registry</h2>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "4px" }}>
+            {sources.length} verified major plastic discharge outfalls and river estuaries worldwide. Combined annual discharge: <strong style={{ color: "var(--accent-amber)" }}>{(totalTons / 1000).toFixed(1)}k tons/yr</strong>.
           </p>
+        </div>
+
+        {/* Plain English Explanation */}
+        <div style={{
+          background: "rgba(0, 242, 254, 0.08)",
+          border: "1px solid rgba(0, 242, 254, 0.25)",
+          borderRadius: "8px",
+          padding: "14px",
+          fontSize: "0.78rem",
+          lineHeight: 1.5,
+          color: "#e2e8f0"
+        }}>
+          <strong style={{ color: "var(--accent-cyan)", display: "block", marginBottom: "4px" }}>
+            🕵️‍♂️ How we find the polluter:
+          </strong>
+          When plastic is spotted in the ocean, we don't just guess who dumped it. We take the exact polymer type (e.g. PE bags or Nylon nets) and run ocean currents <em>backwards in time</em>. By rewinding fluid drift, we calculate which river or coastal facility was the true origin point.
         </div>
 
         {/* Filters */}
@@ -113,7 +128,7 @@ export default function SourceAttribution({ onLedgerUpdated }) {
             </select>
           </div>
           <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginLeft: "auto" }}>
-            {filteredSources.length} sources shown
+            {filteredSources.length} emission sites indexed
           </span>
         </div>
 
@@ -127,7 +142,7 @@ export default function SourceAttribution({ onLedgerUpdated }) {
                 background: "rgba(16,30,64,0.45)",
                 border: `1px solid ${col}28`,
                 borderLeft: `3px solid ${col}`,
-                borderRadius: "var(--radius-sm)",
+                borderRadius: "8px",
                 padding: "12px 14px",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
@@ -138,28 +153,32 @@ export default function SourceAttribution({ onLedgerUpdated }) {
                         {src.risk_level}
                       </span>
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "2px" }}>
                       {src.country} • {src.type} • {src.ocean_basin}
                     </div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "10px" }}>
-                    <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "0.95rem", color: col }}>
-                      {src.annual_discharge_tons}t
-                    </div>
-                    <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>/year</div>
+                  <div style={{ textAlign: "right" }}>
+                    <strong style={{ fontSize: "0.95rem", color: col }}>{src.annual_discharge_tons}t</strong>
+                    <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>/year discharge</div>
                   </div>
                 </div>
 
-                {/* Emission bar */}
-                <div style={{ height: "3px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${barPct}%`, background: col, borderRadius: "2px" }} />
+                {/* Progress bar */}
+                <div style={{ background: "rgba(255,255,255,0.06)", height: "4px", borderRadius: "2px", overflow: "hidden", margin: "6px 0" }}>
+                  <div style={{ width: `${barPct}%`, height: "100%", background: col, borderRadius: "2px" }} />
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", marginTop: "6px", flexWrap: "wrap" }}>
-                  {src.primary_polymers.map(p => (
-                    <span key={p} style={{ fontSize: "0.6rem", padding: "1px 6px", borderRadius: "9999px", background: "rgba(0,242,254,0.1)", color: "var(--accent-cyan)", border: "1px solid rgba(0,242,254,0.2)", fontWeight: 600 }}>{p}</span>
-                  ))}
-                  <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginLeft: "auto" }}>{src.status}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px" }}>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    {src.typical_polymers?.map(p => (
+                      <span key={p} style={{ fontSize: "0.6rem", padding: "1px 5px", borderRadius: "3px", background: "rgba(0,242,254,0.08)", color: "var(--accent-cyan)", border: "1px solid rgba(0,242,254,0.2)" }}>
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                  <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+                    {src.cleanup_status || "Active Monitoring"}
+                  </span>
                 </div>
               </div>
             );
@@ -167,25 +186,27 @@ export default function SourceAttribution({ onLedgerUpdated }) {
         </div>
       </div>
 
-      {/* ── Right: Attribution Solver ─────────────────────────── */}
-      <div className="glass-panel" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* ── Right: Forensic Reverse Solver & Attribution Matrix ─── */}
+      <div className="glass-panel" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px", overflowY: "auto" }}>
         <div>
-          <div className="badge-glow badge-rose" style={{ marginBottom: "6px" }}>
-            <TrendingDown size={12} /> Backward-in-Time PINN Solver
+          <div className="badge-glow badge-cyan" style={{ marginBottom: "6px" }}>
+            <Activity size={12} /> Backward-in-Time Solver
           </div>
-          <h3 style={{ fontSize: "1.05rem", fontWeight: 700 }}>Source Attribution Matrix</h3>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-            Tracks observed plumes to global origin using adjoint transport.
+          <h3 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Source Attribution Matrix</h3>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+            Select an observed plastic polymer to calculate backward ocean drift to the emitter.
           </p>
         </div>
 
         {/* Polymer selector */}
         <div>
-          <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "7px" }}>Observed Polymer Signal:</label>
+          <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "7px", fontWeight: 600 }}>
+            Observed Marine Polymer:
+          </label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
             {["PE", "PET", "Nylon", "PVC", "PS", "ABS"].map(p => (
               <button key={p} onClick={() => { setSelectedPolymer(p); executeReverseAttribution(p); }}
-                style={{ padding: "7px", borderRadius: "6px", border: selectedPolymer === p ? "1px solid var(--accent-cyan)" : "1px solid var(--border-subtle)", background: selectedPolymer === p ? "rgba(0,242,254,0.12)" : "rgba(255,255,255,0.03)", color: selectedPolymer === p ? "var(--accent-cyan)" : "var(--text-secondary)", fontWeight: 600, fontSize: "0.78rem", cursor: "pointer" }}>
+                style={{ padding: "8px", borderRadius: "6px", border: selectedPolymer === p ? "1px solid var(--accent-cyan)" : "1px solid var(--border-subtle)", background: selectedPolymer === p ? "rgba(0,242,254,0.15)" : "rgba(255,255,255,0.03)", color: selectedPolymer === p ? "var(--accent-cyan)" : "var(--text-secondary)", fontWeight: 600, fontSize: "0.78rem", cursor: "pointer" }}>
                 {p}
               </button>
             ))}
@@ -194,21 +215,23 @@ export default function SourceAttribution({ onLedgerUpdated }) {
 
         {/* Primary Culprit Banner */}
         {attributionResult?.attributions && (
-          <div style={{ background: "linear-gradient(135deg, rgba(247,37,133,0.14), rgba(114,9,183,0.14))", border: "1px solid rgba(247,37,133,0.4)", borderRadius: "var(--radius-sm)", padding: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ background: "linear-gradient(135deg, rgba(247,37,133,0.18), rgba(114,9,183,0.18))", border: "1px solid rgba(247,37,133,0.5)", borderRadius: "10px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <span style={{ fontSize: "0.6rem", color: "var(--accent-rose)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Primary Attributed Emitter</span>
-              <h3 style={{ fontSize: "1rem", fontWeight: 800, color: "#fff", marginTop: "2px" }}>
+              <span style={{ fontSize: "0.65rem", color: "var(--accent-rose)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                🎯 Top Attributed Origin
+              </span>
+              <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#fff", marginTop: "2px" }}>
                 {attributionResult.attributions.find(a => a.is_primary_culprit)?.name}
               </h3>
-              <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                {attributionResult.attributions.find(a => a.is_primary_culprit)?.country} • {attributionResult.attributions.find(a => a.is_primary_culprit)?.distance_km} km drift
+              <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                {attributionResult.attributions.find(a => a.is_primary_culprit)?.country} • {attributionResult.attributions.find(a => a.is_primary_culprit)?.distance_km} km drift path
               </p>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--accent-rose)", fontFamily: "var(--font-mono)" }}>
+              <div style={{ fontSize: "1.7rem", fontWeight: 800, color: "var(--accent-rose)", fontFamily: "var(--font-mono)" }}>
                 {((attributionResult.attributions.find(a => a.is_primary_culprit)?.confidence || 0) * 100).toFixed(1)}%
               </div>
-              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>PINN Probability</span>
+              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>Match Certainty</span>
             </div>
           </div>
         )}
@@ -216,52 +239,42 @@ export default function SourceAttribution({ onLedgerUpdated }) {
         {/* Ranked Candidates */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px", overflowY: "auto" }}>
           {attributionResult?.attributions?.map(src => (
-            <div key={src.source_id} style={{ background: "rgba(16,30,64,0.5)", border: src.is_primary_culprit ? "1px solid var(--accent-rose)" : "1px solid var(--border-subtle)", borderRadius: "var(--radius-sm)", padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div key={src.source_id} style={{ background: "rgba(16,30,64,0.5)", border: src.is_primary_culprit ? "1px solid var(--accent-rose)" : "1px solid var(--border-subtle)", borderRadius: "8px", padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <strong style={{ fontSize: "0.88rem" }}>{src.name}</strong>
+                  <strong style={{ fontSize: "0.85rem" }}>{src.name}</strong>
                   {src.polymer_match && (
-                    <span style={{ fontSize: "0.6rem", padding: "2px 7px", borderRadius: "9999px", background: "rgba(6,214,160,0.12)", color: "var(--accent-emerald)", border: "1px solid rgba(6,214,160,0.3)" }}>
+                    <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(6,214,160,0.12)", color: "var(--accent-emerald)", border: "1px solid rgba(6,214,160,0.3)" }}>
                       Polymer ✓
                     </span>
                   )}
                 </div>
                 <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                  {src.country} • {src.distance_km} km • {src.transport_hours}h transport
+                  {src.country} • {src.distance_km} km • {src.transport_hours}h drift
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontWeight: 700, fontSize: "1.05rem", color: src.is_primary_culprit ? "var(--accent-rose)" : "var(--accent-emerald)" }}>
+                <div style={{ fontWeight: 700, fontSize: "1rem", color: src.is_primary_culprit ? "var(--accent-rose)" : "var(--accent-emerald)" }}>
                   {((src.confidence || 0) * 100).toFixed(1)}%
                 </div>
-                <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>Adjoint Score</span>
+                <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Probability</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* PINN Metadata */}
-        <div style={{ background: "rgba(3,8,22,0.5)", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-glass)", fontSize: "0.76rem", display: "flex", flexDirection: "column", gap: "7px" }}>
-          {[
-            ["Inverse Time Window", "36 Hours Adjoint"],
-            ["Stokes Gravity Model", "Coupled Density Decoupling"],
-            ["Attribution Standard", "UNEP Marine Plastic Audit v2"],
-            ["PINN Architecture", "DeepXDE L-BFGS-B, 5k Epochs"],
-          ].map(([k, v]) => (
-            <div key={k} style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "var(--text-muted)" }}>{k}:</span>
-              <strong style={{ textAlign: "right" }}>{v}</strong>
-            </div>
-          ))}
+        {/* Explanatory Seal Button */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <button onClick={handleCommitAttribution} disabled={committed || !attributionResult} className="btn-glow-cyan"
+            style={{ justifyContent: "center", padding: "11px", background: committed ? "rgba(6,214,160,0.2)" : undefined, borderColor: committed ? "var(--accent-emerald)" : undefined, color: committed ? "var(--accent-emerald)" : undefined }}>
+            {committed
+              ? <><CheckCircle2 size={16} /> Attribution Sealed to Cryptographic Ledger</>
+              : <><ShieldAlert size={16} /> Lock Evidence in Tamper-Proof Ledger</>}
+          </button>
+          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", textAlign: "center" }}>
+            Creates an immutable SHA-256 block for environmental regulators.
+          </span>
         </div>
-
-        {/* Commit Button */}
-        <button onClick={handleCommitAttribution} disabled={committed || !attributionResult} className="btn-glow-cyan"
-          style={{ justifyContent: "center", background: committed ? "rgba(6,214,160,0.2)" : undefined, borderColor: committed ? "var(--accent-emerald)" : undefined, color: committed ? "var(--accent-emerald)" : undefined }}>
-          {committed
-            ? <><CheckCircle2 size={16} /> Attribution Sealed to Cryptographic Ledger</>
-            : <><ShieldAlert size={16} /> Seal Attribution Block in Plastic Ledger</>}
-        </button>
       </div>
     </div>
   );

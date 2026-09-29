@@ -105,6 +105,22 @@ export default function SegFormerStudio({ onLedgerUpdated, onDetectionGeolocated
           </div>
         </div>
 
+        {/* Plain English Vision Explainer */}
+        <div style={{
+          background: "rgba(0, 242, 254, 0.08)",
+          border: "1px solid rgba(0, 242, 254, 0.25)",
+          borderRadius: "8px",
+          padding: "12px 14px",
+          fontSize: "0.78rem",
+          lineHeight: 1.5,
+          color: "#e2e8f0"
+        }}>
+          <strong style={{ color: "var(--accent-cyan)", display: "block", marginBottom: "2px" }}>
+            🔬 Step 2 • Microscopic Particle AI:
+          </strong>
+          Microplastics are invisible to the human eye. In water samples stained with fluorescent Nile Red dye, our SegFormer vision model outlines each microscopic particle, measures its micrometer width (Feret diameter), and detects whether it originated from shopping bags (PE), bottles (PET), or fishing nets (Nylon).
+        </div>
+
         {/* Polymer Filter Pills */}
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
